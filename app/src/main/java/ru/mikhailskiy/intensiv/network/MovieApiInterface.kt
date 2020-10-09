@@ -1,27 +1,27 @@
 package ru.mikhailskiy.intensiv.network
 
-import retrofit2.Call
+import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 
 interface MovieApiInterface {
     @GET("movie/top_rated")
-    fun getTopRatedMovies(@Query("api_key") apiKey: String, @Query("language") language: String): Call<MoviesResponse>
+    fun getTopRatedMovies(@Query("api_key") apiKey: String, @Query("language") language: String): Single<MoviesResponse>
 
     @GET("search/movie")
-    fun searchByQuery(@Query("language") language: String, @Query("query") query: String) : Call<MoviesResponse>
+    fun searchByQuery(@Query("language") language: String, @Query("query") query: String) : Single<MoviesResponse>
 
     @GET("movie/now_playing")
-    fun getNowPlaying(@Query("api_key") apiKey: String, @Query("language") language: String) : Call<MoviesResponse>
+    fun getNowPlaying(@Query("api_key") apiKey: String, @Query("language") language: String) : Single<MoviesResponse>
 
     @GET("movie/upcoming")
-    fun getUpcoming(@Query("api_key") apiKey: String, @Query("language") language: String) : Call<MoviesResponse>
+    fun getUpcoming(@Query("api_key") apiKey: String, @Query("language") language: String) : Single<MoviesResponse>
 
     @GET("movie/popular")
-    fun getPopular(@Query("api_key") apiKey: String, @Query("language") language: String) : Call<MoviesResponse>
+    fun getPopular(@Query("api_key") apiKey: String, @Query("language") language: String) : Single<MoviesResponse>
 
     @GET("tv/popular")
-    fun getTVPopular(@Query("api_key") apiKey: String, @Query("language") language: String) : Call<TvResponse>
+    fun getTVPopular(@Query("api_key") apiKey: String, @Query("language") language: String) : Single<TvResponse>
 
 }
