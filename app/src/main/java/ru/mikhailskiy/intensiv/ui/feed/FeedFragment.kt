@@ -7,24 +7,19 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
-
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.feed_fragment.*
 import kotlinx.android.synthetic.main.feed_header.*
 import kotlinx.android.synthetic.main.search_toolbar.view.*
-import retrofit2.Call
-import retrofit2.Response
-import retrofit2.http.Tag
 import ru.mikhailskiy.intensiv.BuildConfig
 import ru.mikhailskiy.intensiv.R
 import ru.mikhailskiy.intensiv.data.Movie
 import ru.mikhailskiy.intensiv.network.MovieApiClient
-import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.afterTextChanged
-import ru.mikhailskiy.intensiv.ui.feed.FeedFragment.Companion.BASE_URL
 import timber.log.Timber
 
 class FeedFragment : Fragment() {
@@ -61,8 +56,7 @@ class FeedFragment : Fragment() {
         }
 
         getNowPlaying
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            .init()
             .subscribe({
                 val movies = it.results
                 val nowMoviesList = listOf(movies?.map {
@@ -75,8 +69,7 @@ class FeedFragment : Fragment() {
 
 
         getUpcoming
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            .init()
             .subscribe({
                 val movies = it.results
                 val upCompingMovies = listOf(movies?.map {
@@ -87,8 +80,7 @@ class FeedFragment : Fragment() {
                 { t->Timber.e(t, t.toString())})
 
         getPopular
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            .init()
             .subscribe({
                 val movies = it.results
                 val popular = listOf(movies?.map {
@@ -139,6 +131,11 @@ class FeedFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
+    }
+
+    fun <T> Single<T>.init(): Single<T> {
+        return this.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     companion object {

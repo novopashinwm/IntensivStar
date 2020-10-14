@@ -1,27 +1,20 @@
 package ru.mikhailskiy.intensiv.ui.tvshows
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.navigation.navOptions
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.tv_shows_fragment.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import ru.mikhailskiy.intensiv.R
-import ru.mikhailskiy.intensiv.data.Movie
 import ru.mikhailskiy.intensiv.network.MovieApiClient
-
 import ru.mikhailskiy.intensiv.network.TvResponse
 import ru.mikhailskiy.intensiv.ui.feed.FeedFragment.Companion.API_KEY
-import ru.mikhailskiy.intensiv.ui.feed.MainCardContainer
-import ru.mikhailskiy.intensiv.ui.feed.MovieItem
 import timber.log.Timber
 
 private const val ARG_PARAM1 = "param1"
@@ -51,14 +44,16 @@ class TvShowsFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         getTVPopular
+
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+
             .subscribe({
-                val movies = it.results
-                val nowMoviesList = movies?.map {
+                val tvshows = it.results
+                val tvShowList = tvshows?.map {
                     TVItem(it) { tv -> openTVDetails(tv) }
                 }?.toList()
-                tv_recycler_view.adapter = adapter.apply { nowMoviesList?.let { addAll(it) } }
+                tv_recycler_view.adapter = adapter.apply { tvShowList?.let { addAll(it) } }
             },
                 { t->Timber.e(t, t.toString())})
 
