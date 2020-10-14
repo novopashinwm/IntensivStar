@@ -1,26 +1,25 @@
 package ru.mikhailskiy.intensiv.ui.feed
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
-
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.feed_fragment.*
 import kotlinx.android.synthetic.main.feed_header.*
 import kotlinx.android.synthetic.main.search_toolbar.view.*
-import retrofit2.Call
-import retrofit2.Response
 import ru.mikhailskiy.intensiv.BuildConfig
 import ru.mikhailskiy.intensiv.R
 import ru.mikhailskiy.intensiv.data.Movie
 import ru.mikhailskiy.intensiv.network.MovieApiClient
-import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.afterTextChanged
-import ru.mikhailskiy.intensiv.ui.feed.FeedFragment.Companion.BASE_URL
 import timber.log.Timber
 
 class FeedFragment : Fragment() {
@@ -41,6 +40,7 @@ class FeedFragment : Fragment() {
         return inflater.inflate(R.layout.feed_fragment, container, false)
     }
 
+    @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -55,58 +55,40 @@ class FeedFragment : Fragment() {
             }
         }
 
-        getNowPlaying.enqueue(object : retrofit2.Callback<MoviesResponse> {
-            override fun onResponse(
-                call: Call<MoviesResponse>,
-                response: Response<MoviesResponse>
-            ) {
-                val movies = response.body()?.results
-
+        getNowPlaying
+            .init()
+            .subscribe({
+                val movies = it.results
                 val nowMoviesList = listOf(movies?.map {
                     MovieItem(it) { movie -> openMovieDetails(movie) }
                 }?.toList()?.let { MainCardContainer(R.string.now_playing, it) })
                 movies_recycler_view.adapter = adapter.apply { addAll(nowMoviesList) }
+            },
+                { t->Timber.e(t, t.toString())})
 
-            }
 
-            override fun onFailure(call: Call<MoviesResponse>, t: Throwable) {
-                Timber.e(call.toString(), t.toString())
-            }
-        })
 
-        getUpcoming.enqueue(object : retrofit2.Callback<MoviesResponse> {
-            override fun onResponse(
-                call: Call<MoviesResponse>,
-                response: Response<MoviesResponse>
-            ) {
-                val movies = response.body()?.results
+        getUpcoming
+            .init()
+            .subscribe({
+                val movies = it.results
                 val upCompingMovies = listOf(movies?.map {
                     MovieItem(it) { movie -> openMovieDetails(movie) }
                 }?.toList()?.let { MainCardContainer(R.string.upcoming, it) })
                 adapter.apply { addAll(upCompingMovies) }
-            }
+            },
+                { t->Timber.e(t, t.toString())})
 
-            override fun onFailure(call: Call<MoviesResponse>, t: Throwable) {
-                Timber.e(call.toString(), t.toString())
-            }
-        })
-
-        getPopular.enqueue(object : retrofit2.Callback<MoviesResponse> {
-            override fun onResponse(
-                call: Call<MoviesResponse>,
-                response: Response<MoviesResponse>
-            ) {
-                val movies = response.body()?.results
+        getPopular
+            .init()
+            .subscribe({
+                val movies = it.results
                 val popular = listOf(movies?.map {
                     MovieItem(it) { movie -> openMovieDetails(movie) }
                 }?.toList()?.let { MainCardContainer(R.string.popular, it) })
                 adapter.apply { addAll(popular) }
-            }
-
-            override fun onFailure(call: Call<MoviesResponse>, t: Throwable) {
-                Timber.e(call.toString(), t.toString())
-            }
-        })
+            },
+                { t->Timber.e(t, t.toString())})
 
 
     }
@@ -149,6 +131,11 @@ class FeedFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
+    }
+
+    fun <T> Single<T>.init(): Single<T> {
+        return this.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     companion object {
