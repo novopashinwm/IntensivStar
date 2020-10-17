@@ -1,7 +1,6 @@
 package ru.mikhailskiy.intensiv.ui.feed
 
 import android.annotation.SuppressLint
-import android.opengl.Visibility
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -61,9 +60,9 @@ class FeedFragment : Fragment() {
                 Function3<MoviesResponse, MoviesResponse, MoviesResponse,
                         List<MainCardContainer>> { now, upcom, pop ->
                     listOf(
-                        MainCardContainer(R.string.now_playing, listMovies(now)),
-                        MainCardContainer(R.string.upcoming, listMovies(upcom)),
-                        MainCardContainer(R.string.popular, listMovies(pop))
+                        MainCardContainer(R.string.now_playing, toConvertListMovies(now)),
+                        MainCardContainer(R.string.upcoming, toConvertListMovies(upcom)),
+                        MainCardContainer(R.string.popular, toConvertListMovies(pop))
                     )
                 }
             )
@@ -73,7 +72,7 @@ class FeedFragment : Fragment() {
             .subscribe { it -> movies_recycler_view.adapter = adapter.apply { addAll(it) } }
     }
 
-    private fun listMovies(now: MoviesResponse) =
+    private fun toConvertListMovies(now: MoviesResponse) =
         now.results.filter { movie -> movie.title != null }
             .map { movie -> MovieItem(movie) { openMovieDetails(movie) } }.toList()
 
