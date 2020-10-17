@@ -11,14 +11,15 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Function3
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.feed_fragment.*
 import kotlinx.android.synthetic.main.feed_header.*
 import kotlinx.android.synthetic.main.search_toolbar.view.*
 import ru.mikhailskiy.intensiv.BuildConfig
 import ru.mikhailskiy.intensiv.R
-import ru.mikhailskiy.intensiv.data.Movie
 import ru.mikhailskiy.intensiv.network.MovieApiClient
+import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.afterTextChanged
 import timber.log.Timber
 
@@ -55,45 +56,27 @@ class FeedFragment : Fragment() {
             }
         }
 
-        getNowPlaying
+        Single.zip(getNowPlaying, getUpcoming, getPopular,
+                Function3<MoviesResponse, MoviesResponse, MoviesResponse,
+                        List<MainCardContainer>> { now, upcom, pop ->
+                    listOf(
+                        MainCardContainer(R.string.now_playing, toConvertListMovies(now)),
+                        MainCardContainer(R.string.upcoming, toConvertListMovies(upcom)),
+                        MainCardContainer(R.string.popular, toConvertListMovies(pop))
+                    )
+                }
+            )
             .init()
-            .subscribe({
-                val movies = it.results
-                val nowMoviesList = listOf(movies?.map {
-                    MovieItem(it) { movie -> openMovieDetails(movie) }
-                }?.toList()?.let { MainCardContainer(R.string.now_playing, it) })
-                movies_recycler_view.adapter = adapter.apply { addAll(nowMoviesList) }
-            },
-                { t->Timber.e(t, t.toString())})
-
-
-
-        getUpcoming
-            .init()
-            .subscribe({
-                val movies = it.results
-                val upCompingMovies = listOf(movies?.map {
-                    MovieItem(it) { movie -> openMovieDetails(movie) }
-                }?.toList()?.let { MainCardContainer(R.string.upcoming, it) })
-                adapter.apply { addAll(upCompingMovies) }
-            },
-                { t->Timber.e(t, t.toString())})
-
-        getPopular
-            .init()
-            .subscribe({
-                val movies = it.results
-                val popular = listOf(movies?.map {
-                    MovieItem(it) { movie -> openMovieDetails(movie) }
-                }?.toList()?.let { MainCardContainer(R.string.popular, it) })
-                adapter.apply { addAll(popular) }
-            },
-                { t->Timber.e(t, t.toString())})
-
-
+            .doOnSubscribe {  progress_movies.visibility = View.VISIBLE }
+            .doOnTerminate {  progress_movies.visibility = View.GONE   }
+            .subscribe { it -> movies_recycler_view.adapter = adapter.apply { addAll(it) } }
     }
 
-    private fun openMovieDetails(movie: Movie) {
+    private fun toConvertListMovies(now: MoviesResponse) =
+        now.results.filter { movie -> movie.title != null }
+            .map { movie -> MovieItem(movie) { openMovieDetails(movie) } }.toList()
+
+    private fun openMovieDetails(movie: MoviesResponse.Movie) {
         val options = navOptions {
             anim {
                 enter = R.anim.slide_in_right
@@ -127,7 +110,6 @@ class FeedFragment : Fragment() {
         super.onStop()
         search_toolbar.clear()
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
