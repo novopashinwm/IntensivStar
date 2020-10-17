@@ -1,6 +1,7 @@
 package ru.mikhailskiy.intensiv.ui.feed
 
 import android.annotation.SuppressLint
+import android.opengl.Visibility
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -56,24 +57,25 @@ class FeedFragment : Fragment() {
             }
         }
 
-        Single
-            .zip(getNowPlaying, getUpcoming, getPopular,
+        Single.zip(getNowPlaying, getUpcoming, getPopular,
                 Function3<MoviesResponse, MoviesResponse, MoviesResponse,
                         List<MainCardContainer>> { now, upcom, pop ->
                     listOf(
-                        MainCardContainer(R.string.now_playing, now.results.filter { movie -> movie.title != null }
-                            .map{movie -> MovieItem(movie) {openMovieDetails(movie)} }.toList()),
-                        MainCardContainer(R.string.upcoming, upcom.results.filter { movie -> movie.title != null }
-                            .map{movie -> MovieItem(movie) {openMovieDetails(movie)} }.toList()),
-                        MainCardContainer(R.string.popular, pop.results.filter { movie -> movie.title != null }
-                            .map{movie -> MovieItem(movie) {openMovieDetails(movie)} }.toList())
+                        MainCardContainer(R.string.now_playing, listMovies(now)),
+                        MainCardContainer(R.string.upcoming, listMovies(upcom)),
+                        MainCardContainer(R.string.popular, listMovies(pop))
                     )
                 }
             )
             .init()
+            .doOnSubscribe {  progress_movies.visibility = View.VISIBLE }
+            .doOnTerminate {  progress_movies.visibility = View.GONE   }
             .subscribe { it -> movies_recycler_view.adapter = adapter.apply { addAll(it) } }
-
     }
+
+    private fun listMovies(now: MoviesResponse) =
+        now.results.filter { movie -> movie.title != null }
+            .map { movie -> MovieItem(movie) { openMovieDetails(movie) } }.toList()
 
     private fun openMovieDetails(movie: MoviesResponse.Movie) {
         val options = navOptions {
@@ -109,7 +111,6 @@ class FeedFragment : Fragment() {
         super.onStop()
         search_toolbar.clear()
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
