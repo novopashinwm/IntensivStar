@@ -87,4 +87,8 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxandroid:$rootProject.rxAndroidVersion"
     implementation "io.reactivex.rxjava2:rxjava:$rootProject.rxJavaVersion"
     implementation "com.squareup.retrofit2:adapter-rxjava2:$rootProject.rxRetrofitAdapter"
+
+    //Room
+    implementation "androidx.room:room-runtime:$room_version"
+    //kapt "androidx.room:room-compiler:$room_version"
 }

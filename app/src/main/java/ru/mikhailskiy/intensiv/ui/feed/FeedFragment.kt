@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import io.reactivex.Single
@@ -15,6 +16,7 @@ import io.reactivex.functions.Function3
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.feed_fragment.*
 import kotlinx.android.synthetic.main.feed_header.*
+import kotlinx.android.synthetic.main.item_with_text.*
 import kotlinx.android.synthetic.main.search_toolbar.view.*
 import ru.mikhailskiy.intensiv.BuildConfig
 import ru.mikhailskiy.intensiv.R
@@ -88,6 +90,8 @@ class FeedFragment : Fragment() {
 
         val bundle = Bundle()
         bundle.putString("title", movie.title)
+        bundle.putInt("MOVIE_ID", movie.id)
+
         findNavController().navigate(R.id.movie_details_fragment, bundle, options)
     }
 

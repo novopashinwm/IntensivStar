@@ -2,12 +2,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginStart="@dimen/material_margin_super_small"
+    android:layout_marginLeft="@dimen/material_margin_super_small"
+    android:layout_marginEnd="@dimen/material_margin_super_small"
+    android:layout_marginBottom="@dimen/material_margin_normal"
     tools:context="ru.mikhailskiy.intensiv.ui.movie_details.MovieDetailsFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imageFilm"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="@dimen/movie_card_height"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize10Percent"
+        tools:background="@color/white"
+        tools:src="@drawable/ic_avatar" />
+
+    <TextView
+        android:id="@+id/tvFilmInfoText"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="180dp"
+        android:text="@string/hello_blank_fragment"
+        android:textAlignment="viewStart" />
 
 </FrameLayout>
