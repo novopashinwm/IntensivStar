@@ -17,5 +17,6 @@
 
     <dimen name="tv_show_height">180dp</dimen>
 
+    <dimen name="artist_side">70dp</dimen>
 
 </resources>

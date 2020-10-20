@@ -25,6 +25,9 @@ interface MovieApiInterface {
     @GET("movie/{movie_id}")
     fun getMovie(@Path("movie_id") movie_id:Int, @Query("api_key") apiKey: String, @Query("language") language: String) : Single<MovieDetailsResponse>
 
+    @GET("movie/{movie_id}/credits")
+    fun getMovieTeam(@Path("movie_id") movie_id: Int, @Query("api_key") apiKey: String) : Single<MovieDetailsTeamResponse>
+
     @GET("tv/popular")
     fun getTVPopular( @Query("api_key") apiKey: String, @Query("language") language: String) : Single<TvResponse>
 
