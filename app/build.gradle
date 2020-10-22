@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-//apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-kapt'
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
@@ -92,7 +92,7 @@ dependencies {
 
     //Room
     implementation "androidx.room:room-runtime:$room_version"
-    //kapt "androidx.room:room-compiler:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 
 // RxJava support for Room
     implementation 'androidx.room:room-rxjava2:2.2.2'

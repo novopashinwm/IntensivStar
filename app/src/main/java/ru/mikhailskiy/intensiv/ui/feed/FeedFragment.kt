@@ -58,16 +58,28 @@ class FeedFragment : Fragment() {
             }
         }
 
-        /*getPopular
+        getPopular
             .init()
             .subscribe{ it -> val db = context?.let { it1 -> MovieDatabase.get(it1).movieDao() }
                 for (mv in it.results) {
                     if (db != null) {
-                        db.insert(movieDB = convertMovie(mv))
+                        val movie:MovieDB = convertMovie(mv)
+                        db.delete(movie)
+                        db.insert(movie)
                     }
                 }
-            }*/
+            }
+        context?.let {
+            MovieDatabase.get(it).movieDao().loadAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe  {
+                    for (movie in it) {
+                        println("${movie.id} ${movie.title}")
+                    }
 
+                }
+        }
         Single.zip(getNowPlaying, getUpcoming, getPopular,
                 Function3<MoviesResponse, MoviesResponse, MoviesResponse,
                         List<MainCardContainer>> { now, upcom, pop ->
@@ -85,7 +97,7 @@ class FeedFragment : Fragment() {
     }
 
     fun convertMovie(dto: MoviesResponse.Movie):MovieDB{ return MovieDB(dto.id, dto.adult, dto.backdropPath
-        , dto.genreIds, dto.originalLanguage, dto.originalTitle, dto.overview, dto.popularity, dto.posterPath
+        /*,dto.genreIds*/, dto.originalLanguage, dto.originalTitle, dto.overview, dto.popularity, dto.posterPath
     , dto.releaseDate, dto.title, dto.video, dto.voteAverage, dto.voteCount) }
 
     private fun toConvertListMovies(now: MoviesResponse) =

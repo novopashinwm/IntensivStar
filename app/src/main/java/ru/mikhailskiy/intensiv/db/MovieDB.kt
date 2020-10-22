@@ -8,7 +8,7 @@ data class MovieDB (
     @PrimaryKey val id: Int,
     val adult: Boolean,
     val backdropPath: String,
-    val genreIds: List<Int>,
+    //val genreIds: List<Int>,
     val originalLanguage: String,
     val originalTitle: String,
     val overview: String,

@@ -7,6 +7,8 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import ru.mikhailskiy.intensiv.db.MovieDB
 import ru.mikhailskiy.intensiv.db.MovieDatabase
 import java.time.Instant
@@ -23,13 +25,29 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment? ?: return
 
         val movie: MovieDB = MovieDB(id = 694919 ,adult = false, backdropPath = "/pq0JSpwyT2URytdFG0euztQPAyR.jpg"
-            , genreIds = listOf(), originalLanguage = "en", originalTitle = "Money Plane"
+            /*, genreIds = listOf()*/, originalLanguage = "en", originalTitle = "Money Plane"
             , overview = "Профессиональный вор, задолжавший сорок миллионов долларов, после угроз семье вынужден согласиться на своё последнее ограбление. Ему предстоит обчистить футуристическое казино, расположенное на борту воздушного лайнера, завсегдатаи которого - самые отпетые преступники в мире."
             , popularity = 1032.342, posterPath = "/6CoRTJTmijhBLJTUNoVSUNxZMEI.jpg", releaseDate = "2020-09-29",
             title = "Денежный самолёт", video = false, voteAverage = 6.0, voteCount = 147)
-        val db = MovieDatabase.get(this).movieDao()
-        db.insert(movie)
 
+        val db = MovieDatabase.get(this).movieDao()
+        db.delete(movie)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe ()
+        db.insert(movie)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe ()
+        db.loadAll()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe  {
+                for (movie in it) {
+                    println("${movie.id} ${movie.title}")
+                }
+
+            }
         // Set up Action Bar
         val navController = host.navController
 
