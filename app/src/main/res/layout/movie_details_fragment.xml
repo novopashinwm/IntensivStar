@@ -29,7 +29,7 @@
 
         <CheckBox
             android:id="@+id/addFavoriteMovie"
-
+            android:button="@drawable/day_selector"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <androidx.recyclerview.widget.RecyclerView

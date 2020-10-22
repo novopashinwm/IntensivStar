@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.imageview.ShapeableImageView
@@ -17,20 +18,21 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.movie_details_fragment.view.*
 import ru.mikhailskiy.intensiv.R
+import ru.mikhailskiy.intensiv.db.MovieDB
+import ru.mikhailskiy.intensiv.db.MovieDatabase
 import ru.mikhailskiy.intensiv.network.MovieApiClient
+import ru.mikhailskiy.intensiv.network.MovieDetailsResponse
 import ru.mikhailskiy.intensiv.network.MovieDetailsTeamResponse
+import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.feed.FeedFragment
 import ru.mikhailskiy.intensiv.ui.feed.MainCardContainer
 import timber.log.Timber
 
-
-private const val ARG_PARAM1 = "title"
-private const val ARG_PARAM2 = "MOVIE_ID"
+private const val ARG_MOVIE_ID = "MOVIE_ID"
 
 class MovieDetailsFragment : Fragment() {
 
-    private var param1: String? = null
-    private var param2: Int = 0
+    private var move_id: Int = 0
 
     private val adapter by lazy {
         GroupAdapter<GroupieViewHolder>()
@@ -38,8 +40,7 @@ class MovieDetailsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getInt(ARG_PARAM2)
+             move_id = it.getInt(ARG_MOVIE_ID)
         }
     }
 
@@ -58,18 +59,32 @@ class MovieDetailsFragment : Fragment() {
         view.crew_recycler_view.adapter = adapter.apply { addAll(listOf()) }
         val image = view.findViewById<ShapeableImageView>(R.id.imageFilm)
         val txtFilmInfo = view.findViewById<TextView>(R.id.tvFilmInfoText)
-        val getMovie by lazy { MovieApiClient.apiClient.getMovie(param2,FeedFragment.API_KEY, getString(R.string.lang_ru)) }
-        val getMovieTeam by lazy { MovieApiClient.apiClient.getMovieTeam(param2, FeedFragment.API_KEY) }
+        val chkLike = view.findViewById<CheckBox>(R.id.addFavoriteMovie)
+        val getMovie by lazy { MovieApiClient.apiClient.getMovie(move_id,FeedFragment.API_KEY, getString(R.string.lang_ru)) }
+        val getMovieTeam by lazy { MovieApiClient.apiClient.getMovieTeam(move_id, FeedFragment.API_KEY) }
+        lateinit var movie : MovieDB
 
          getMovie
             .init()
             .subscribe({
+                movie = convertMovie(it)
                 txtFilmInfo.text = it.overview
                 Picasso.get()
                     .load("https://image.tmdb.org/t/p/w500" +it.posterPath)
                     .into(image)
             },
                 { t-> Timber.e(t, t.toString())})
+        chkLike.setOnCheckedChangeListener { buttonView, isChecked ->
+            run {
+                if (isChecked) {
+                    val db = context?.let { it1 -> MovieDatabase.get(it1).movieDao() }
+                    if (db != null) {
+                        db.delete(movie)
+                        db.insert(movie)
+                    }
+                }
+            }
+        }
 
         getMovieTeam
              .init()
@@ -91,11 +106,14 @@ class MovieDetailsFragment : Fragment() {
         fun newInstance(param1: String, param2: String) =
             MovieDetailsFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    putString(ARG_MOVIE_ID, param2)
                 }
             }
     }
+
+    fun convertMovie(dto: MovieDetailsResponse):MovieDB{ return MovieDB(dto.id, dto.adult, dto.backdropPath
+        /*,dto.genreIds*/, dto.originalLanguage, dto.originalTitle, dto.overview, dto.popularity, dto.posterPath
+        , dto.releaseDate, dto.title, dto.video, dto.voteAverage, dto.voteCount) }
 
     private fun toConvertListCast(now: MovieDetailsTeamResponse) =
         now.cast.filter { movie -> movie.name != null }
