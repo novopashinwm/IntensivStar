@@ -18,12 +18,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.movie_details_fragment.view.*
 import ru.mikhailskiy.intensiv.R
-import ru.mikhailskiy.intensiv.db.MovieDB
+import ru.mikhailskiy.intensiv.db.MovieEntity
 import ru.mikhailskiy.intensiv.db.MovieDatabase
 import ru.mikhailskiy.intensiv.network.MovieApiClient
 import ru.mikhailskiy.intensiv.network.MovieDetailsResponse
 import ru.mikhailskiy.intensiv.network.MovieDetailsTeamResponse
-import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.feed.FeedFragment
 import ru.mikhailskiy.intensiv.ui.feed.MainCardContainer
 import timber.log.Timber
@@ -62,7 +61,7 @@ class MovieDetailsFragment : Fragment() {
         val chkLike = view.findViewById<CheckBox>(R.id.addFavoriteMovie)
         val getMovie by lazy { MovieApiClient.apiClient.getMovie(move_id,FeedFragment.API_KEY, getString(R.string.lang_ru)) }
         val getMovieTeam by lazy { MovieApiClient.apiClient.getMovieTeam(move_id, FeedFragment.API_KEY) }
-        lateinit var movie : MovieDB
+        lateinit var movie : MovieEntity
 
          getMovie
             .init()
@@ -74,13 +73,13 @@ class MovieDetailsFragment : Fragment() {
                     .into(image)
             },
                 { t-> Timber.e(t, t.toString())})
+        //Еще вопрос - если я уже лайкнул это видео, как при повторном просмотреть, увидеть, что это видео лайкнуто?
         chkLike.setOnCheckedChangeListener { buttonView, isChecked ->
             run {
                 if (isChecked) {
                     val db = context?.let { it1 -> MovieDatabase.get(it1).movieDao() }
                     if (db != null) {
-                        db.delete(movie)
-                        db.insert(movie)
+                       db.update(movie)
                     }
                 }
             }
@@ -111,7 +110,7 @@ class MovieDetailsFragment : Fragment() {
             }
     }
 
-    fun convertMovie(dto: MovieDetailsResponse):MovieDB{ return MovieDB(dto.id, dto.adult, dto.backdropPath
+    fun convertMovie(dto: MovieDetailsResponse):MovieEntity{ return MovieEntity(dto.id, dto.adult, dto.backdropPath
         /*,dto.genreIds*/, dto.originalLanguage, dto.originalTitle, dto.overview, dto.popularity, dto.posterPath
         , dto.releaseDate, dto.title, dto.video, dto.voteAverage, dto.voteCount) }
 

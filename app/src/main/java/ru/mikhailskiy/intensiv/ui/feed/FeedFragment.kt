@@ -9,6 +9,8 @@ import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import io.reactivex.Completable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Function3
@@ -18,7 +20,7 @@ import kotlinx.android.synthetic.main.feed_header.*
 import kotlinx.android.synthetic.main.search_toolbar.view.*
 import ru.mikhailskiy.intensiv.BuildConfig
 import ru.mikhailskiy.intensiv.R
-import ru.mikhailskiy.intensiv.db.MovieDB
+import ru.mikhailskiy.intensiv.db.MovieEntity
 import ru.mikhailskiy.intensiv.db.MovieDatabase
 import ru.mikhailskiy.intensiv.network.MovieApiClient
 import ru.mikhailskiy.intensiv.network.MoviesResponse
@@ -60,19 +62,17 @@ class FeedFragment : Fragment() {
 
         getPopular
             .init()
+                //Я не понял, что я тут могу сделать с map - что нужно написать в MovieMapper?
+            .map { movie -> toConvertListMoviesEntity(movie)  }
             .subscribe{ it -> val db = context?.let { it1 -> MovieDatabase.get(it1).movieDao() }
-                for (mv in it.results) {
                     if (db != null) {
-                        val movie:MovieDB = convertMovie(mv)
-                        db.delete(movie)
-                        db.insert(movie)
+                        db.insertAll(it)
                     }
-                }
+
             }
         context?.let {
             MovieDatabase.get(it).movieDao().loadAll()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .init()
                 .subscribe  {
                     for (movie in it) {
                         println("${movie.id} ${movie.title}")
@@ -96,10 +96,13 @@ class FeedFragment : Fragment() {
             .subscribe { it -> movies_recycler_view.adapter = adapter.apply { addAll(it) } }
     }
 
-    fun convertMovie(dto: MoviesResponse.Movie):MovieDB{ return MovieDB(dto.id, dto.adult, dto.backdropPath
+    fun convertMovie(dto: MoviesResponse.Movie):MovieEntity{ return MovieEntity(dto.id, dto.adult, dto.backdropPath
         /*,dto.genreIds*/, dto.originalLanguage, dto.originalTitle, dto.overview, dto.popularity, dto.posterPath
     , dto.releaseDate, dto.title, dto.video, dto.voteAverage, dto.voteCount) }
 
+    private fun toConvertListMoviesEntity(response: MoviesResponse) =
+        response.results.filter { movie -> movie.title != null  }
+            .map { movie -> convertMovie(movie)  }.toList()
     private fun toConvertListMovies(now: MoviesResponse) =
         now.results.filter { movie -> movie.title != null }
             .map { movie -> MovieItem(movie) { openMovieDetails(movie) } }.toList()
@@ -144,9 +147,16 @@ class FeedFragment : Fragment() {
         inflater.inflate(R.menu.main_menu, menu)
     }
 
+    //Single и Observable в init дублируют код друг друга - можно эту проблему решить?
     fun <T> Single<T>.init(): Single<T> {
         return this.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun <T> Observable<T>.init(): Observable<T> {
+        return this.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+
     }
 
     companion object {
