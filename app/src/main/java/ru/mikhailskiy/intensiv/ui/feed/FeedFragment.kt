@@ -25,6 +25,7 @@ import ru.mikhailskiy.intensiv.db.MovieDatabase
 import ru.mikhailskiy.intensiv.network.MovieApiClient
 import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.afterTextChanged
+import ru.mikhailskiy.intensiv.util.init
 import timber.log.Timber
 
 class FeedFragment : Fragment() {
@@ -148,16 +149,9 @@ class FeedFragment : Fragment() {
     }
 
     //Single и Observable в init дублируют код друг друга - можно эту проблему решить?
-    fun <T> Single<T>.init(): Single<T> {
-        return this.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-    }
 
-    fun <T> Observable<T>.init(): Observable<T> {
-        return this.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
 
-    }
+
 
     companion object {
         const val API_KEY = BuildConfig.THE_MOVIE_DATABASE_API

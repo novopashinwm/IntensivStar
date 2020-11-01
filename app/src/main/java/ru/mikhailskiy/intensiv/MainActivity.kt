@@ -14,6 +14,7 @@ import io.reactivex.schedulers.Schedulers
 import ru.mikhailskiy.intensiv.db.MovieEntity
 import ru.mikhailskiy.intensiv.db.MovieDatabase
 import ru.mikhailskiy.intensiv.ui.feed.FeedFragment
+import ru.mikhailskiy.intensiv.util.init
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,19 +33,17 @@ class MainActivity : AppCompatActivity() {
             title = "Денежный самолёт", video = false, voteAverage = 6.0, voteCount = 147)
 
         val db = MovieDatabase.get(this).movieDao()
-        //Михаил! Ведь с init() происходит дублирование кода, как можно решить эту проблему?
+
         db.update(movie)
             .init()
             .subscribe ()
 
         db.loadAll()
             .init()
-
             .subscribe  {
                 for (movie in it) {
                     println("${movie.id} ${movie.title}")
                 }
-
             }
         // Set up Action Bar
         val navController = host.navController
@@ -57,15 +56,8 @@ class MainActivity : AppCompatActivity() {
         bottomNav?.setupWithNavController(navController)
     }
 
-    fun Completable.init(): Completable {
-        return this.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-    }
 
-    fun <T> Observable<T>.init(): Observable<T> {
-        return this.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
 
-    }
+
 }
 
