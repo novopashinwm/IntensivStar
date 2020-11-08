@@ -58,6 +58,8 @@ ext {
     rxAndroidVersion = "2.1.1"
     rxJavaVersion = "2.2.17"
     rxRetrofitAdapter = "2.7.1"
+    rxRoomVersion = "2.2.2"
 
     room_version = "2.2.5"
+    room_persist ="1.1.1"
 }

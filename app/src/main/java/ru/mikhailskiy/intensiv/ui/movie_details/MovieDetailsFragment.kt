@@ -5,14 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.imageview.ShapeableImageView
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.android.synthetic.main.movie_details_fragment.*
 import kotlinx.android.synthetic.main.movie_details_fragment.view.*
 import ru.mikhailskiy.intensiv.R
 import ru.mikhailskiy.intensiv.db.MovieDatabase
@@ -24,7 +22,6 @@ import ru.mikhailskiy.intensiv.ui.feed.FeedFragment
 import ru.mikhailskiy.intensiv.ui.feed.MainCardContainer
 import ru.mikhailskiy.intensiv.util.init
 import timber.log.Timber
-import kotlinx.android.synthetic.main.movie_details_fragment.*
 
 private const val ARG_MOVIE_ID = "MOVIE_ID"
 
@@ -49,7 +46,6 @@ class MovieDetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Inflate the layout for this fragment
 
         view.cast_recycler_view.layoutManager = LinearLayoutManager(context)
         view.cast_recycler_view.adapter = adapter.apply { addAll(listOf()) }
@@ -77,8 +73,7 @@ class MovieDetailsFragment : Fragment() {
             },
                 { t-> Timber.e(t, t.toString())})
 
-        //Еще вопрос - если я уже лайкнул это видео, как при повторном просмотреть, увидеть, что это видео лайкнуто?
-        addFavoriteMovie.setOnCheckedChangeListener { buttonView, isChecked ->
+         addFavoriteMovie.setOnCheckedChangeListener { buttonView, isChecked ->
             run {
                 if (isChecked) {
                     val db = context?.let { it1 -> MovieDatabase.get(it1).movieDao() }
@@ -101,7 +96,6 @@ class MovieDetailsFragment : Fragment() {
     }
 
     companion object {
-
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             MovieDetailsFragment().apply {
@@ -121,6 +115,4 @@ class MovieDetailsFragment : Fragment() {
     private fun toConvertListCrew(now: MovieDetailsTeamResponse) =
         now.crew.filter { movie -> movie.name != null }
             .map { movie -> MovieItemCrewDetails(movie) }.toList()
-
-
 }

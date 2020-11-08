@@ -9,19 +9,15 @@ import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import io.reactivex.Completable
-import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Function3
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.feed_fragment.*
 import kotlinx.android.synthetic.main.feed_header.*
 import kotlinx.android.synthetic.main.search_toolbar.view.*
 import ru.mikhailskiy.intensiv.BuildConfig
 import ru.mikhailskiy.intensiv.R
-import ru.mikhailskiy.intensiv.db.MovieEntity
 import ru.mikhailskiy.intensiv.db.MovieDatabase
+import ru.mikhailskiy.intensiv.db.MovieEntity
 import ru.mikhailskiy.intensiv.network.MovieApiClient
 import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.afterTextChanged
@@ -63,7 +59,6 @@ class FeedFragment : Fragment() {
 
         getPopular
             .init()
-                //Я не понял, что я тут могу сделать с map - что нужно написать в MovieMapper?
             .map { movie -> toConvertListMoviesEntity(movie)  }
             .subscribe{ it -> val db = context?.let { it1 -> MovieDatabase.get(it1).movieDao() }
                     if (db != null) {
@@ -147,11 +142,6 @@ class FeedFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
     }
-
-    //Single и Observable в init дублируют код друг друга - можно эту проблему решить?
-
-
-
 
     companion object {
         const val API_KEY = BuildConfig.THE_MOVIE_DATABASE_API
