@@ -10,17 +10,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Function3
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.feed_fragment.*
 import kotlinx.android.synthetic.main.feed_header.*
 import kotlinx.android.synthetic.main.search_toolbar.view.*
 import ru.mikhailskiy.intensiv.BuildConfig
 import ru.mikhailskiy.intensiv.R
+import ru.mikhailskiy.intensiv.db.MovieDatabase
+import ru.mikhailskiy.intensiv.db.MovieEntity
 import ru.mikhailskiy.intensiv.network.MovieApiClient
 import ru.mikhailskiy.intensiv.network.MoviesResponse
 import ru.mikhailskiy.intensiv.ui.afterTextChanged
+import ru.mikhailskiy.intensiv.util.init
 import timber.log.Timber
 
 class FeedFragment : Fragment() {
@@ -56,6 +57,25 @@ class FeedFragment : Fragment() {
             }
         }
 
+        getPopular
+            .init()
+            .map { movie -> toConvertListMoviesEntity(movie)  }
+            .subscribe{ it -> val db = context?.let { it1 -> MovieDatabase.get(it1).movieDao() }
+                    if (db != null) {
+                        db.insertAll(it)
+                    }
+
+            }
+        context?.let {
+            MovieDatabase.get(it).movieDao().loadAll()
+                .init()
+                .subscribe  {
+                    for (movie in it) {
+                        println("${movie.id} ${movie.title}")
+                    }
+
+                }
+        }
         Single.zip(getNowPlaying, getUpcoming, getPopular,
                 Function3<MoviesResponse, MoviesResponse, MoviesResponse,
                         List<MainCardContainer>> { now, upcom, pop ->
@@ -72,6 +92,13 @@ class FeedFragment : Fragment() {
             .subscribe { it -> movies_recycler_view.adapter = adapter.apply { addAll(it) } }
     }
 
+    fun convertMovie(dto: MoviesResponse.Movie):MovieEntity{ return MovieEntity(dto.id, dto.adult, dto.backdropPath
+        /*,dto.genreIds*/, dto.originalLanguage, dto.originalTitle, dto.overview, dto.popularity, dto.posterPath
+    , dto.releaseDate, dto.title, dto.video, dto.voteAverage, dto.voteCount) }
+
+    private fun toConvertListMoviesEntity(response: MoviesResponse) =
+        response.results.filter { movie -> movie.title != null  }
+            .map { movie -> convertMovie(movie)  }.toList()
     private fun toConvertListMovies(now: MoviesResponse) =
         now.results.filter { movie -> movie.title != null }
             .map { movie -> MovieItem(movie) { openMovieDetails(movie) } }.toList()
@@ -87,7 +114,8 @@ class FeedFragment : Fragment() {
         }
 
         val bundle = Bundle()
-        bundle.putString("title", movie.title)
+        bundle.putInt("MOVIE_ID", movie.id)
+
         findNavController().navigate(R.id.movie_details_fragment, bundle, options)
     }
 
@@ -113,11 +141,6 @@ class FeedFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
-    }
-
-    fun <T> Single<T>.init(): Single<T> {
-        return this.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
     }
 
     companion object {

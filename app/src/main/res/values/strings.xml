@@ -28,4 +28,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="placeholder">Пёс Киноман</string>
     <string name="lang_ru">ru</string>
+    <string name="cast_details">Артисты</string>
+    <string name="movie_details_crew">Команда</string>
 </resources>

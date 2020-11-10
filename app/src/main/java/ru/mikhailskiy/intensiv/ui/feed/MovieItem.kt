@@ -5,12 +5,12 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.item_with_text.*
 import ru.mikhailskiy.intensiv.R
-import ru.mikhailskiy.intensiv.data.Movie
+
 import ru.mikhailskiy.intensiv.network.MoviesResponse
 
 class MovieItem(
     private val content: MoviesResponse.Movie,
-    private val onClick: (movie: Movie) -> Unit
+    private val onClick: (movie: MoviesResponse.Movie) -> Unit
 ) : Item() {
 
     override fun getLayout() = R.layout.item_with_text
@@ -22,15 +22,9 @@ class MovieItem(
             onClick.invoke(content)
         }
 
-        // TODO Получать из модели
         Picasso.get()
             .load("https://image.tmdb.org/t/p/w500" +content.posterPath)
             .into(viewHolder.image_preview)
     }
 }
 
-private fun Any.invoke(content: MoviesResponse.Movie) {
-    println("test1")
-    println(content)
-    //Toast.makeText( this ,content.toString(), Toast.LENGTH_LONG)
-}
